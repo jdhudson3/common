@@ -17,12 +17,11 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	dto "github.com/prometheus/client_model/go"
 	"io"
 	"math"
 	"strconv"
 	"strings"
-
-	dto "github.com/prometheus/client_model/go"
 
 	"github.com/golang/protobuf/proto" //nolint:staticcheck // Ignore SA1019. Need to keep deprecated package for compatibility.
 	"github.com/prometheus/common/model"
@@ -272,7 +271,7 @@ func (p *TextParser) startLabelName() stateFn {
 		if p.skipBlankTab(); p.err != nil {
 			return nil // Unexpected end of input.
 		}
-		return p.readingValue
+		return p.validateLabelNames
 	}
 	if p.readTokenAsLabelName(); p.err != nil {
 		return nil // Unexpected end of input.
@@ -299,7 +298,13 @@ func (p *TextParser) startLabelName() stateFn {
 		p.parseError(fmt.Sprintf("expected '=' after label name, found %q", p.currentByte))
 		return nil
 	}
-	// Check for duplicate label names.
+
+	return p.startLabelValue
+}
+
+// validateLabelNames represents the state where label names have been read
+// and should be checked for duplicates
+func (p *TextParser) validateLabelNames() stateFn {
 	labels := make(map[string]struct{})
 	for _, l := range p.currentMetric.Label {
 		lName := l.GetName()
@@ -310,7 +315,7 @@ func (p *TextParser) startLabelName() stateFn {
 			return nil
 		}
 	}
-	return p.startLabelValue
+	return p.readingValue
 }
 
 // startLabelValue represents the state where the next byte read from p.buf is
@@ -368,7 +373,7 @@ func (p *TextParser) startLabelValue() stateFn {
 		if p.skipBlankTab(); p.err != nil {
 			return nil // Unexpected end of input.
 		}
-		return p.readingValue
+		return p.validateLabelNames
 	default:
 		p.parseError(fmt.Sprintf("unexpected end of label value %q", p.currentLabelPair.GetValue()))
 		return nil

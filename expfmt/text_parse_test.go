@@ -640,6 +640,11 @@ metric{quantile="0x1p-3"} 3.14
 			in:  `metric{label="bla",label="bla"} 3.14`,
 			err: "text format parsing error in line 1: duplicate label names for metric",
 		},
+		// 34: Check significant number of labels, including a duplicate
+		{
+			in:  `metric{label1="bla",label2="bla",label3="bla",label4="bla",label5="bla",label1="bla"} 3.14`,
+			err: "text format parsing error in line 1: duplicate label names for metric",
+		},
 	}
 
 	for i, scenario := range scenarios {
