@@ -302,7 +302,7 @@ func (p *TextParser) startLabelName() stateFn {
 	return p.startLabelValue
 }
 
-// validateLabelNames represents the state where label names have been read
+// validateLabelNames represents the state where label names and values have been read
 // and should be checked for duplicates
 func (p *TextParser) validateLabelNames() stateFn {
 	labels := make(map[string]struct{})
