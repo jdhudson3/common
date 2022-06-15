@@ -227,7 +227,7 @@ func (p *TextParser) readingMetricName() stateFn {
 	if len(p.validMetrics) > 0 && p.currentMF != nil && p.currentMF.Name != nil {
 		name := *p.currentMF.Name
 		if _, ok := p.validMetrics[name]; !ok {
-			return nil
+			return p.startOfLine
 		}
 	}
 	if p.currentToken.Len() == 0 {
