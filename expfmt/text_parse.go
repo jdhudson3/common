@@ -72,6 +72,7 @@ type TextParser struct {
 	// count and sum of that summary/histogram.
 	currentIsSummaryCount, currentIsSummarySum     bool
 	currentIsHistogramCount, currentIsHistogramSum bool
+	validMetrics                                   map[string]struct{}
 }
 
 // TextToMetricFamilies reads 'in' as the simple and flat text-based exchange
@@ -222,6 +223,12 @@ func (p *TextParser) startComment() stateFn {
 func (p *TextParser) readingMetricName() stateFn {
 	if p.readTokenAsMetricName(); p.err != nil {
 		return nil
+	}
+	if len(p.validMetrics) > 0 && p.currentMF != nil && p.currentMF.Name != nil {
+		name := *p.currentMF.Name
+		if _, ok := p.validMetrics[name]; !ok {
+			return nil
+		}
 	}
 	if p.currentToken.Len() == 0 {
 		p.parseError("invalid metric name")

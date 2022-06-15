@@ -71,12 +71,13 @@ func ResponseFormat(h http.Header) Format {
 
 // NewDecoder returns a new decoder based on the given input format.
 // If the input format does not imply otherwise, a text format decoder is returned.
-func NewDecoder(r io.Reader, format Format) Decoder {
+func NewDecoder(r io.Reader, format Format, validMetrics map[string]struct{}) Decoder {
 	switch format {
 	case FmtProtoDelim:
 		return &protoDecoder{r: r}
 	}
-	return &textDecoder{r: r}
+	p := TextParser{validMetrics: validMetrics}
+	return &textDecoder{r: r, p: p}
 }
 
 // protoDecoder implements the Decoder interface for protocol buffers.

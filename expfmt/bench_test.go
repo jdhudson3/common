@@ -25,7 +25,7 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
-var parser TextParser
+var parser TextParser = TextParser{validMetrics: map[string]struct{}{"asdf": {}}}
 
 // Benchmarks to show how much penalty text format parsing actually inflicts.
 //
